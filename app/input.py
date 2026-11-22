@@ -6,11 +6,15 @@ from .errors import InspectionError
 
 
 def sample(kind):
-    if kind not in ('clean','dirty'):
+    if kind not in ('clean','dirty','repair'):
         raise InspectionError('UNKNOWN_TRACE_SET', status=404)
     folder = DATA / kind
-    return {'traces': {key:(folder / f'{key}.csv').read_text(encoding='utf-8') for key in SOURCES},
+    material = {'traces': {key:(folder / f'{key}.csv').read_text(encoding='utf-8') for key in SOURCES},
             'settings':json.loads((folder / 'link.json').read_text(encoding='utf-8'))}
+    retests = folder / 'retests.json'
+    if retests.exists():
+        material['retests'] = json.loads(retests.read_text(encoding='utf-8'))
+    return material
 
 
 def request_material():
@@ -21,8 +25,10 @@ def request_material():
         data = sample(body['sample'])
         return {**data, 'settings':body.get('settings', data['settings'])}
     data = body.get('traces')
-    if set(body)-{'traces','settings'} or not isinstance(data,dict) or set(data)!=set(SOURCES):
+    if set(body)-{'traces','settings','retests'} or not isinstance(data,dict) or set(data)!=set(SOURCES):
         raise InspectionError('THREE_TRACES_REQUIRED', status=400)
     if any(not isinstance(text,str) for text in data.values()):
         raise InspectionError('TRACE_TEXT_REQUIRED', status=400)
+    if 'retests' in body and not isinstance(body['retests'], list):
+        raise InspectionError('RETEST_LIST_REQUIRED', status=400)
     return body

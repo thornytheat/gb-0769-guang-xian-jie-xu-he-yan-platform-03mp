@@ -1,0 +1,12 @@
+[
+  {
+    "retest_id": "RT-A-501-20261122",
+    "side": "a",
+    "start_distance": 480,
+    "start_unit": "m",
+    "end_distance": 520,
+    "end_unit": "m",
+    "recorded_at": "2026-11-22T08:30:00+08:00",
+    "trace": "event,distance,unit,loss_db\nRA-04,601,m,0.12\n"
+  }
+]

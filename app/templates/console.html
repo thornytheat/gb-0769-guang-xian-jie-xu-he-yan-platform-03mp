@@ -21,6 +21,7 @@
       {% if data %}
         {% if section in ['trace','calibration'] %}{% include 'intake.html' %}{% endif %}
         {% if section in ['pairs','loss','design'] %}{% include 'observations.html' %}{% endif %}
+        {% if section == 'retest' %}{% include 'retest.html' %}{% endif %}
       {% endif %}
       {% if section in ['archive','certificate'] %}{% include 'archive.html' %}{% endif %}
     </main>

@@ -1,0 +1,40 @@
+{% set design = data.retest_design %}{% set pairs = data.retest_pairs %}{% set calibration = data.retest_calibration %}
+<section class="panel stats">
+  <dl class="kpis">
+    <div><dt>补测批次</dt><dd>{{ calibration.batches|length }}</dd></div>
+    <div><dt>区间内读数</dt><dd>{{ calibration.batches | sum(attribute='in_scope') }}</dd></div>
+    <div><dt>已复核接头</dt><dd>{{ design.retest_reviewed }}</dd></div>
+    <div><dt>待对端补测</dt><dd>{{ design.retest_pending }}</dd></div>
+    <div><dt>原轨迹通过/超限</dt><dd>{{ design.passed }} / {{ design.over_limit }}</dd></div>
+  </dl>
+</section>
+<section class="panel events" id="evidence-grid">
+  <div class="title-line"><h3>$ 抢修补测对账（按补测覆盖区间分区）</h3>
+  <div class="keys"><button type="button" id="event-prev"><kbd>K</kbd> 上一条</button><button type="button" id="event-next"><kbd>J</kbd> 下一条</button></div></div>
+  <div class="sheet"><table><thead>
+  <tr><th>设计点 / 行</th><th>链程 (m)</th><th>代次</th><th>配对 / 补测批次</th><th>实测血缘（端 · 编号 #行 · 批次）</th><th>净损耗 (dB)</th><th>核验</th></tr>
+  </thead><tbody>
+  {% for item in design.rows %}<tr tabindex="0" data-event="{{ item.joint }}">
+    <td>{{ item.joint }} #{{ item.design_line }}</td>
+    <td class="num">{{ item.chain_mm|metres }}</td>
+    <td>{{ item.epoch or ('补测区' if item.retest_scope else '原轨迹') }}</td>
+    <td>{{ item.pair or '—' }}{% for scope in item.retest_scope %}<br>{{ scope.side|upper }}:{{ scope.retest_id }}{% endfor %}</td>
+    <td>{% for ev in item.evidence %}{{ ev.side|upper }} · {{ ev.id }} #{{ ev.line }} · {{ ev.epoch }}{% if ev.retest_id %} · {{ ev.retest_id }}{% endif %}<br>{% else %}—{% endfor %}{% for s in item.near_singles %} {{ s.id }}({{ s.code }})<br>{% endfor %}</td>
+    <td class="num">{{ item.net_db or '—' }}</td>
+    <td class="result" data-state="{{ item.code }}">{{ codes[item.code] }}</td>
+  </tr>{% else %}<tr><td colspan="7">提交补测批次后对账。</td></tr>{% endfor %}
+  </tbody></table></div>
+  <output id="focus-event" aria-live="polite"></output>
+</section>
+<section class="panel"><h3>$ 补测批次与覆盖区间</h3><div class="sheet"><table><thead>
+<tr><th>补测编号</th><th>端</th><th>覆盖区间 (m)</th><th>采集时间</th><th>区间内/外</th><th>隔离</th></tr></thead><tbody>
+{% for batch in calibration.batches %}<tr><td>{{ batch.retest_id }}</td><td>{{ batch.side|upper }}</td>
+<td class="num">{{ batch.start_mm|metres }} – {{ batch.end_mm|metres }}</td><td>{{ batch.recorded_at or '—' }}</td>
+<td>{{ batch.in_scope }} / {{ batch.out_of_scope }}</td><td>{{ batch.isolated }}</td></tr>{% endfor %}
+</tbody></table></div></section>
+<section class="panel exceptions"><h3>$ 取代、待对端与单端证据</h3><div class="sheet"><table><thead><tr><th>记录</th><th>代次</th><th>批次</th><th>链程 (m)</th><th>原因</th></tr></thead><tbody>
+{% for row in pairs.singles %}<tr><td>{{ row.id }}</td><td>{{ row.epoch }}</td><td>{{ row.retest_id or '—' }}</td><td class="num">{{ row.chain_mm|metres }}</td><td>{{ codes[row.code] or row.code }}</td></tr>{% else %}<tr><td colspan="5">没有单端记录。</td></tr>{% endfor %}
+</tbody></table></div></section>
+<section class="panel archive"><h3>$ 已确认补测台账</h3><div class="sheet"><table><thead><tr><th>补测编号</th><th>端</th><th>提交时间 UTC</th><th>状态</th></tr></thead><tbody>
+{% for entry in retest_entries %}<tr><td>{{ entry.retest_id }}</td><td>{{ entry.sides|join(' / ') }}</td><td>{{ entry.submitted_at }}</td><td>{{ entry.state }}</td></tr>{% else %}<tr><td colspan="4">提交后留档；同编号重试不重复留档。</td></tr>{% endfor %}
+</tbody></table></div></section>

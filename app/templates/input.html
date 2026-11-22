@@ -1,6 +1,6 @@
 <form class="command" method="post">
   <span class="prompt" aria-hidden="true">$</span><label for="fiber-data">轨迹组</label>
-  <select name="sample" id="fiber-data"><option value="dirty" {{ 'selected' if mode == 'dirty' }}>跨端误差链路</option><option value="clean" {{ 'selected' if mode == 'clean' }}>标准双向链路</option><option value="custom" {{ 'selected' if mode == 'custom' }}>自填轨迹</option></select>
+  <select name="sample" id="fiber-data"><option value="dirty" {{ 'selected' if mode == 'dirty' }}>跨端误差链路</option><option value="clean" {{ 'selected' if mode == 'clean' }}>标准双向链路</option><option value="repair" {{ 'selected' if mode == 'repair' }}>抢修补测链路</option><option value="custom" {{ 'selected' if mode == 'custom' }}>自填轨迹</option></select>
   <button id="fiber-run">{{ '留档 / 重跑' if section == 'archive' else '运行核验' }}</button><output id="request-state" aria-live="polite"></output>
   <details id="fiber-source" {% if mode == 'custom' %}open{% endif %}><summary>轨迹与校准参数</summary>
     <div class="edit">
